@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+
+# Update Repositories
 apt-get update
 apt-get install -y curl git
 
@@ -7,19 +9,19 @@ VAGRANT_DISTR=/vagrant/.artifactory
 TC_INSTALLPATH=/opt/JetBrains
 JAVA_INSTALLPATH=/opt/java
 
-echo "[INFO] Installation has been started..."
+echo "[INFO] Check teamcity's possible versions"
 TC_DONWLOADLINK=$(wget -q -O - "https://confluence.jetbrains.com/display/TW/Previous+Releases+Downloads" | 
   grep -i -o -E "htt(p|ps):\/\/download.jetbrains.com\/teamcity\/\S*\.tar.gz" |
   head -1)
 
 if [ ! -z "$TC_DONWLOADLINK" ]
 then
+	echo "[INFO] Installation has been started..."
 	TC_ARCHIVENAME=$(basename $TC_DONWLOADLINK)
 	
 	# Prepare directory to store artifactory
 	mkdir -p $VAGRANT_DISTR
 	
-
 	# Download TeanCity if needed
 	if [ -f $VAGRANT_DISTR/$TC_ARCHIVENAME ]
 	then
@@ -64,9 +66,11 @@ then
 	fi
 	
 	echo "[INFO] Copy ENV paraments"
-	cp -f /vagrant/scripts/tc-env-set.sh /etc/profile.d
+	cp -f /vagrant/scripts/vagrant-envs.sh /etc/profile.d
 	
 	echo "[INFO] Starting TeamCity Server and Agent"
+	export TEAMCITY_DATA_PATH=/vagrant/.BuildServer
+	mkdir -p $TEAMCITY_DATA_PATH
 	sh /opt/JetBrains/TeamCity/bin/runAll.sh start
 	
 else
